@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao ProgrammerDev</title>
+    <style>
+        :root {
+            --primary-color: #4a148c;
+            --secondary-color: #0d47a1;
+            --accent-color: #2196f3;
+            --text-color: #ffffff;
+            --text-dark: #333333;
+            --card-bg: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        .cta-buttons {
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-primary:hover {
+            background-color: #1976d2;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.6);
+        }
+        
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+        
+        .feature-card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-icon svg {
+            width: 30px;
+            height: 30px;
+            fill: white;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .tutorial {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 3rem;
+            margin: 4rem 0;
+        }
+        
+        .tutorial h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+        
+        .step h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .screenshots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+        
+        .screenshot {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .screenshot:hover {
+            transform: scale(1.02);
+        }
+        
+        .screenshot img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .faq {
+            margin: 4rem 0;
+        }
+        
+        .faq h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .faq-item {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .faq-question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            display: none;
+            padding-top: 1rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+        
+        .faq-item.active .faq-question:after {
+            content: "−";
+        }
+        
+        .faq-question:after {
+            content: "+";
+            font-size: 1.5rem;
+        }
+        
+        footer {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 4rem;
+        }
+        
+        footer p {
+            opacity: 0.8;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .badge svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+            margin-right: 0.3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                text-align: center;
+            }
+            
+            .tutorial {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ProgrammerDev</h1>
+            <p>A comunidade exclusiva para programadores compartilharem conhecimento, conectarem-se e crescerem juntos</p>
+            <div class="cta-buttons">
+                <a href="index.html" class="btn btn-primary">Acessar a Plataforma</a>
+                <a href="#tutorial" class="btn btn-secondary">Como Usar</a>
+            </div>
+        </header>
+        
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                </div>
+                <h3>Comunidade Global</h3>
+                <p>Conecte-se com programadores de todo o mundo. Compartilhe experiências, solucione problemas juntos e cresça profissionalmente.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+                    </svg>
+                </div>
+                <h3>Chat Privado</h3>
+                <p>Converse diretamente com outros desenvolvedores. Envie mensagens, compartilhe imagens, vídeos e construa relacionamentos profissionais.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-2v-4h-2v4H8l4-4 4 4zm-3-5V8h-2v4h-2l3-4 3 4h-2z"/>
+                    </svg>
+                </div>
+                <h3>Compartilhamento de Mídia</h3>
+                <p>Compartilhe códigos, screenshots, arquivos e vídeos diretamente na plataforma com uploads rápidos e visualização instantânea.</p>
+            </div>
+        </section>
+        
+        <section class="tutorial" id="tutorial">
+            <h2>Como Usar o ProgrammerDev</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Crie sua Conta</h3>
+                    <p>Registre-se com seu e-mail e senha para criar sua conta de desenvolvedor. O processo é rápido e simples.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Complete seu Perfil</h3>
+                    <p>Adicione sua foto de perfil e atualize suas informações para que outros programadores possam te conhecer melhor.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Conecte-se</h3>
+                    <p>Navegue pela lista de programadores online, encontre desenvolvedores com interesses similares e inicie conversas.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Participe do Grupo Global</h3>
+                    <p>Junte-se ao grupo global para discussões com todos os membros da comunidade sobre tópicos de programação.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="screenshots">
+            <div class="screenshot">
+                <img src="https://via.placeholder.com/600x400/4a148c/ffffff?text=Chat+Privado" alt="Chat Privado">
+            </div>
+            <div class="screenshot">
+                <img src="https://via.placeholder.com/600x400/0d47a1/ffffff?text=Grupo+Global" alt="Grupo Global">
+            </div>
+            <div class="screenshot">
+                <img src="https://via.placeholder.com/600x400/2196f3/ffffff?text=Perfil+de+Usuário" alt="Perfil de Usuário">
+            </div>
+        </section>
+        
+        <section class="faq">
+            <h2>Perguntas Frequentes</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">O que é o selo de verificação azul?</div>
+                <div class="faq-answer">
+                    O selo de verificação azul <span class="badge">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                    </span> é um distintivo especial que confirma que você é um membro confiável da comunidade ProgrammerDev. Para solicitá-lo, basta clicar no botão "Solicitar Verificação" no seu perfil.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">Como enviar arquivos e imagens?</div>
+                <div class="faq-answer">
+                    Para enviar imagens ou vídeos em uma conversa, clique no botão de anexo ao lado da caixa de mensagem. Você pode selecionar arquivos do seu dispositivo que serão enviados instantaneamente com um tempo de carregamento mínimo.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">Como funciona o grupo global?</div>
+                <div class="faq-answer">
+                    O grupo global é um espaço de discussão onde todos os membros da comunidade podem participar. Somente o administrador pode criar grupos, garantindo que as discussões sejam organizadas e relevantes para todos os programadores.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">A plataforma é gratuita?</div>
+                <div class="faq-answer">
+                    Sim! O ProgrammerDev é uma plataforma 100% gratuita criada para unir programadores e facilitar a troca de conhecimento e networking entre profissionais da área de desenvolvimento.
+                </div>
+            </div>
+        </section>
+        
+        <div class="cta-buttons" style="margin-top: 3rem;">
+            <a href="index.html" class="btn btn-primary">Começar Agora</a>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 ProgrammerDev - Todos os direitos reservados</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Script para as perguntas frequentes
+        document.querySelectorAll('.faq-item').forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.toggle('active');
+            });
+        });
+        
+        // Redirecionamento suave para as seções
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 50,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

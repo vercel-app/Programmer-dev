@@ -1,0 +1,2024 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProgrammerDev - Comunidade de Programadores</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a148c; /* Roxo escuro */
+            --secondary-color: #0d47a1; /* Azul escuro */
+            --text-color: #ffffff;
+            --sidebar-color: #2d1b4e;
+            --chat-bg: #1a1a2e;
+            --message-sent: #4527a0;
+            --message-received: #303f9f;
+            --verified-color: #2196f3;
+            --online-color: #4caf50;
+            --offline-color: #9e9e9e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-color);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .logo span {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .profile {
+            text-align: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-pic input {
+            display: none;
+        }
+
+        .profile-pic label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 4px 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .profile-name {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+
+        .profile-name h3 {
+            margin-right: 5px;
+        }
+
+        .verified-badge {
+            width: 16px;
+            height: 16px;
+            fill: var(--verified-color);
+            display: none;
+        }
+
+        .profile-status {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .admin-panel {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .admin-panel h4 {
+            margin-bottom: 10px;
+        }
+
+        .admin-actions {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-actions button {
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 4px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .admin-actions button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .verify-request {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .verify-request p {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .verify-request button {
+            padding: 8px 12px;
+            background-color: var(--verified-color);
+            border: none;
+            border-radius: 4px;
+            color: var(--text-color);
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .verify-request button:hover {
+            background-color: #1976d2;
+        }
+
+        .tabs {
+            display: flex;
+            margin: 20px 0 15px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .tab:first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+
+        .tab:last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .tab.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .user-list {
+            max-height: calc(100vh - 390px);
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            background-color: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .user-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-name h4 {
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        .user-status {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+
+        .status-online {
+            background-color: var(--online-color);
+        }
+
+        .status-offline {
+            background-color: var(--offline-color);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--chat-bg);
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .chat-header .user-name {
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header .user-name h3 {
+            margin-right: 5px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .welcome-screen h2 {
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .welcome-screen p {
+            max-width: 600px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .message-sent {
+            align-self: flex-end;
+            background-color: var(--message-sent);
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-received {
+            align-self: flex-start;
+            background-color: var(--message-received);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .message-timestamp {
+            margin-left: auto;
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .message-content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message-media {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .chat-input {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .chat-input button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .chat-input button:hover {
+            background-color: #5e35b1;
+        }
+
+        .chat-input button svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-color);
+        }
+
+        .media-input {
+            display: none;
+        }
+
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-form {
+            width: 400px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .login-form .input-group {
+            margin-bottom: 20px;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .login-form button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--verified-color);
+            color: var(--text-color);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .login-form button:hover {
+            background-color: #1976d2;
+        }
+
+        .login-form p {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .login-form p a {
+            color: var(--verified-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-form p a:hover {
+            text-decoration: underline;
+        }
+
+        .login-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .login-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .login-tab.active {
+            border-bottom: 2px solid var(--verified-color);
+            font-weight: bold;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            background-color: rgba(33, 150, 243, 0.9);
+            color: white;
+            font-size: 14px;
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .group-chat {
+            display: none;
+        }
+
+        .group-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .group-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .group-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .image-modal .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .download-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Login/Cadastro -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-form">
+            <h2>ProgrammerDev</h2>
+            <div class="login-tabs">
+                <div class="login-tab active" data-tab="login">Login</div>
+                <div class="login-tab" data-tab="register">Cadastro</div>
+            </div>
+            
+            <!-- Formulário de Login -->
+            <div id="loginForm">
+                <div class="input-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Seu email">
+                </div>
+                <div class="input-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" placeholder="Sua senha">
+                </div>
+                <button id="loginButton">Entrar</button>
+                <p>Não tem uma conta? <a href="#" id="showRegister">Cadastre-se</a></p>
+            </div>
+            
+            <!-- Formulário de Cadastro -->
+            <div id="registerForm" style="display: none;">
+                <div class="input-group">
+                    <label for="registerName">Nome completo</label>
+                    <input type="text" id="registerName" placeholder="Seu nome">
+                </div>
+                <div class="input-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" placeholder="Seu email">
+                </div>
+                <div class="input-group">
+                    <label for="registerPassword">Senha</label>
+                    <input type="password" id="registerPassword" placeholder="Sua senha">
+                </div>
+                <button id="registerButton">Cadastrar</button>
+                <p>Já tem uma conta? <a href="#" id="showLogin">Faça login</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conteúdo principal (após login) -->
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1>ProgrammerDev</h1>
+                <span>Comunidade de Programadores</span>
+            </div>
+            
+            <!-- Perfil do usuário -->
+            <div class="profile">
+                <div class="profile-pic">
+                    <img id="profileImage" src="https://via.placeholder.com/150" alt="Foto de perfil">
+                    <input type="file" id="profilePicInput" accept="image/*">
+                    <label for="profilePicInput">Alterar</label>
+                </div>
+                <div class="profile-name">
+                    <h3 id="profileName">Carregando...</h3>
+                    <svg class="verified-badge" id="verifiedBadge" viewBox="0 0 24 24">
+                        <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"/>
+                    </svg>
+                </div>
+                <p class="profile-status">Online</p>
+                
+                <!-- Painel de administrador (visível apenas para o admin) -->
+                <div class="admin-panel" id="adminPanel">
+                    <h4>Painel de Administrador</h4>
+                    <div class="admin-actions">
+                        <button id="createGroupBtn">Criar Grupo Global</button>
+                        <button id="manageVerificationsBtn">Gerenciar Verificações</button>
+                        <button id="manageBansBtn">Gerenciar Banimentos</button>
+                    </div>
+                </div>
+                
+                <!-- Botão para solicitar verificação -->
+                <div class="verify-request" id="verifyRequest">
+                    <p>Quer um selo de verificação?</p>
+                    <button id="requestVerificationBtn">
+                        <svg class="verified-badge" viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-right: 5px; fill: white;">
+                            <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"/>
+                        </svg>
+                        Solicitar Verificação
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tabs para alternar entre usuários online/offline -->
+            <div class="tabs">
+                <div class="tab active" data-status="all">Todos</div>
+                <div class="tab" data-status="online">Online</div>
+                <div class="tab" data-status="offline">Offline</div>
+            </div>
+            
+            <!-- Lista de usuários -->
+            <div class="user-list" id="userList">
+                <!-- Os usuários serão adicionados dinamicamente pelo JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Conteúdo principal (área de chat) -->
+        <div class="main-content">
+            <!-- Tela de boas-vindas (mostrada antes de selecionar um chat) -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <h2>Bem-vindo ao ProgrammerDev</h2>
+                <p>Selecione um usuário na lista ao lado para iniciar uma conversa ou participe do grupo de discussão global.</p>
+            </div>
+            
+            <!-- Chat com usuário -->
+            <div id="privateChat" style="display: none; flex: 1; display: flex; flex-direction: column;">
+                <div class="chat-header" id="privateChatHeader">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+                <div class="chat-messages" id="privateChatMessages">
+                    <!-- Mensagens serão adicionadas dinamicamente -->
+                </div>
+                <div class="chat-input">
+                    <input type="file" id="mediaInput" class="media-input" accept="image/*,video/*">
+                    <button id="attachMediaBtn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                        </svg>
+                    </button>
+                    <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+                    <button id="sendMessageBtn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chat em grupo -->
+            <div id="groupChat" style="display: none; flex: 1; display: flex; flex-direction: column;">
+                <div class="chat-header">
+                    <div class="group-info">
+                        <div class="group-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Grupo Global</h3>
+                            <p style="font-size: 12px; opacity: 0.7;">Todos os usuários</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="groupChatMessages">
+                    <!-- Mensagens serão adicionadas dinamicamente -->
+                </div>
+                <div class="chat-input">
+                    <input type="file" id="groupMediaInput" class="media-input" accept="image/*,video/*">
+                    <button id="groupAttachMediaBtn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.910 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                        </svg>
+                    </button>
+                    <input type="text" id="groupMessageInput" placeholder="Digite sua mensagem...">
+                    <button id="sendGroupMessageBtn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para visualização de imagens -->
+    <div class="image-modal" id="imageModal">
+        <span class="close-btn" id="closeImageModal">&times;</span>
+        <img id="modalImage" src="" alt="Imagem ampliada">
+        <button class="download-btn" id="downloadImageBtn">Download</button>
+    </div>
+    
+    <!-- Notificação -->
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBO_lkHCi7QIOcE1vbNEtx3gknsDfZHAps",
+            authDomain: "banco-de-dadossy.firebaseapp.com",
+            projectId: "banco-de-dadossy",
+            storageBucket: "banco-de-dadossy.firebasestorage.app",
+            messagingSenderId: "1972078944",
+            appId: "1:1972078944:web:d5c938bb64f05448f87605",
+            measurementId: "G-R5DQCJ1N66"
+        };
+        
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        
+        // Variáveis globais
+        let currentUser = null;
+        let currentChat = null;
+        let currentChatType = null; // 'private' ou 'group'
+        let users = [];
+        let unreadMessages = {};
+        
+        // Elementos DOM
+        const loginContainer = document.getElementById('loginContainer');
+        const mainContainer = document.getElementById('mainContainer');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginTabs = document.querySelectorAll('.login-tab');
+        const showRegisterLink = document.getElementById('showRegister');
+        const showLoginLink = document.getElementById('showLogin');
+        const loginButton = document.getElementById('loginButton');
+        const registerButton = document.getElementById('registerButton');
+        const userList = document.getElementById('userList');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const privateChat = document.getElementById('privateChat');
+        const groupChat = document.getElementById('groupChat');
+        const privateChatHeader = document.getElementById('privateChatHeader');
+        const privateChatMessages = document.getElementById('privateChatMessages');
+        const groupChatMessages = document.getElementById('groupChatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const groupMessageInput = document.getElementById('groupMessageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const sendGroupMessageBtn = document.getElementById('sendGroupMessageBtn');
+        const profileName = document.getElementById('profileName');
+        const profileImage = document.getElementById('profileImage');
+        const profilePicInput = document.getElementById('profilePicInput');
+        const verifiedBadge = document.getElementById('verifiedBadge');
+        const adminPanel = document.getElementById('adminPanel');
+        const verifyRequest = document.getElementById('verifyRequest');
+        const requestVerificationBtn = document.getElementById('requestVerificationBtn');
+        const createGroupBtn = document.getElementById('createGroupBtn');
+        const manageVerificationsBtn = document.getElementById('manageVerificationsBtn');
+        const manageBansBtn = document.getElementById('manageBansBtn');
+        const statusTabs = document.querySelectorAll('.tab');
+        const notification = document.getElementById('notification');
+        const mediaInput = document.getElementById('mediaInput');
+        const attachMediaBtn = document.getElementById('attachMediaBtn');
+        const groupMediaInput = document.getElementById('groupMediaInput');
+        const groupAttachMediaBtn = document.getElementById('groupAttachMediaBtn');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const closeImageModal = document.getElementById('closeImageModal');
+        const downloadImageBtn = document.getElementById('downloadImageBtn');
+        
+        // Constantes
+        const ADMIN_EMAIL = 'isaacmuaco2@gmail.com';
+        
+        // Funções de autenticação
+        function registerUser() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            if (!name || !email || !password) {
+                showNotification('Preencha todos os campos para se cadastrar.');
+                return;
+            }
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Criar documento do usuário no Firestore
+                    const user = userCredential.user;
+                    return db.collection('users').doc(user.uid).set({
+                        name: name,
+                        email: email,
+                        profilePic: '',
+                        verified: false,
+                        online: true,
+                        banned: false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    showNotification('Cadastro realizado com sucesso!');
+                    showLoginForm();
+                })
+                .catch((error) => {
+                    showNotification('Erro ao cadastrar: ' + error.message);
+                });
+        }
+        
+        function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showNotification('Preencha todos os campos para fazer login.');
+                return;
+            }
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    return db.collection('users').doc(user.uid).update({
+                        online: true,
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    showNotification('Login realizado com sucesso!');
+                })
+                .catch((error) => {
+                    showNotification('Erro ao fazer login: ' + error.message);
+                });
+        }
+        
+        function logoutUser() {
+            if (currentUser) {
+                db.collection('users').doc(currentUser.uid).update({
+                    online: false,
+                    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    auth.signOut()
+                        .then(() => {
+                            showNotification('Logout realizado com sucesso!');
+                            loginContainer.style.display = 'flex';
+                            mainContainer.style.display = 'none';
+                        })
+                        .catch((error) => {
+                            showNotification('Erro ao fazer logout: ' + error.message);
+                        });
+                });
+            }
+        }
+        
+        // Observador de autenticação
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loginContainer.style.display = 'none';
+                mainContainer.style.display = 'flex';
+                
+                // Carregar dados do usuário
+                loadUserData();
+                
+                // Carregar lista de usuários
+                loadUsers();
+                
+                // Verificar se é admin
+                if (user.email === ADMIN_EMAIL) {
+                    adminPanel.style.display = 'block';
+                    verifyRequest.style.display = 'none';
+                } else {
+                    adminPanel.style.display = 'none';
+                    // Verificar se o usuário já tem verificação
+                    checkVerificationStatus();
+                }
+                
+                // Adicionar listener para grupo global
+                loadGlobalGroup();
+            } else {
+                currentUser = null;
+                loginContainer.style.display = 'flex';
+                mainContainer.style.display = 'none';
+            }
+        });
+        
+        // Carregar dados do usuário atual
+        function loadUserData() {
+            db.collection('users').doc(currentUser.uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        profileName.textContent = userData.name;
+                        
+                        if (userData.profilePic) {
+                            profileImage.src = userData.profilePic;
+                        }
+                        
+                        if (userData.verified) {
+                            verifiedBadge.style.display = 'block';
+                        } else {
+                            verifiedBadge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error('Erro ao carregar dados do usuário:', error);
+                });
+        }
+        
+        // Carregar lista de usuários
+        function loadUsers(filter = 'all') {
+            userList.innerHTML = '';
+            
+            db.collection('users').where('banned', '==', false).get()
+                .then((querySnapshot) => {
+                    users = [];
+                    querySnapshot.forEach((doc) => {
+                        const userData = doc.data();
+                        userData.id = doc.id;
+                        users.push(userData);
+                    });
+                    
+                    // Ordenar usuários (online primeiro, depois por nome)
+                    users.sort((a, b) => {
+                        if (a.online && !b.online) return -1;
+                        if (!a.online && b.online) return 1;
+                        return a.name.localeCompare(b.name);
+                    });
+                    
+                    // Adicionar opção de grupo global
+                    const groupItem = document.createElement('div');
+                    groupItem.className = 'user-item';
+                    groupItem.innerHTML = `
+                        <div class="group-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                            </svg>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">
+                                <h4>Grupo Global</h4>
+                            </div>
+                            <div class="user-status">Todos os usuários</div>
+                        </div>
+                        <div class="status-indicator status-online"></div>
+                    `;
+                    groupItem.addEventListener('click', () => openGroupChat());
+                    userList.appendChild(groupItem);
+                    
+                    // Filtrar usuários conforme a seleção
+                    let filteredUsers = users;
+                    if (filter === 'online') {
+                        filteredUsers = users.filter(user => user.online);
+                    } else if (filter === 'offline') {
+                        filteredUsers = users.filter(user => !user.online);
+                    }
+                    
+                    // Renderizar usuários
+                    filteredUsers.forEach((user) => {
+                        if (user.id !== currentUser.uid) {
+                            renderUser(user);
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Erro ao carregar usuários:', error);
+                });
+        }
+        
+        // Renderizar um usuário na lista
+        function renderUser(user) {
+            const userItem = document.createElement('div');
+            userItem.className = 'user-item';
+            userItem.innerHTML = `
+                <img src="${user.profilePic || 'https://via.placeholder.com/150'}" alt="${user.name}">
+                <div class="user-info">
+                    <div class="user-name">
+                        <h4>${user.name}</h4>
+                        ${user.verified ? `
+                            <svg class="verified-badge" viewBox="0 0 24 24" style="width: 14px; height: 14px; display: block;">
+                                <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"/>
+                            </svg>
+                        ` : ''}
+                    </div>
+                    <div class="user-status">${user.online ? 'Online' : 'Offline'}</div>
+                </div>
+                <div class="status-indicator ${user.online ? 'status-online' : 'status-offline'}"></div>
+            `;
+            
+            userItem.addEventListener('click', () => openPrivateChat(user));
+            userList.appendChild(userItem);
+        }
+        
+        // Verificar status de verificação do usuário
+        function checkVerificationStatus() {
+            db.collection('users').doc(currentUser.uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        if (userData.verified) {
+                            verifyRequest.style.display = 'none';
+                        } else {
+                            // Verificar se já existe uma solicitação pendente
+                            db.collection('verificationRequests')
+                                .where('userId', '==', currentUser.uid)
+                                .where('status', '==', 'pending')
+                                .get()
+                                .then((querySnapshot) => {
+                                    if (!querySnapshot.empty) {
+                                        requestVerificationBtn.textContent = 'Solicitação pendente';
+                                        requestVerificationBtn.disabled = true;
+                                    } else {
+                                        verifyRequest.style.display = 'block';
+                                    }
+                                });
+                        }
+                    }
+                });
+        }
+        
+        // Abrir chat privado com um usuário
+        function openPrivateChat(user) {
+            currentChat = user;
+            currentChatType = 'private';
+            
+            // Atualizar cabeçalho do chat
+            privateChatHeader.innerHTML = `
+                <img src="${user.profilePic || 'https://via.placeholder.com/150'}" alt="${user.name}">
+                <div>
+                    <div class="user-name">
+                        <h3>${user.name}</h3>
+                        ${user.verified ? `
+                            <svg class="verified-badge" viewBox="0 0 24 24" style="width: 16px; height: 16px; display: block;">
+                                <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"/>
+                            </svg>
+                        ` : ''}
+                    </div>
+                    <p style="font-size: 12px; opacity: 0.7;">${user.online ? 'Online' : 'Offline'}</p>
+                </div>
+            `;
+            
+            // Exibir chat privado e ocultar outros
+            welcomeScreen.style.display = 'none';
+            privateChat.style.display = 'flex';
+            groupChat.style.display = 'none';
+            
+            // Carregar mensagens
+            loadPrivateMessages(user.id);
+            
+            // Limpar campo de mensagem
+            messageInput.value = '';
+            messageInput.focus();
+        }
+        
+        // Abrir chat de grupo
+        function openGroupChat() {
+            currentChatType = 'group';
+            
+            // Exibir chat de grupo e ocultar outros
+            welcomeScreen.style.display = 'none';
+            privateChat.style.display = 'none';
+            groupChat.style.display = 'flex';
+            
+            // Carregar mensagens do grupo
+            loadGroupMessages();
+            
+            // Limpar campo de mensagem
+            groupMessageInput.value = '';
+            groupMessageInput.focus();
+        }
+        
+        // Carregar mensagens privadas
+        function loadPrivateMessages(userId) {
+            privateChatMessages.innerHTML = '';
+            
+            // Determinar o ID do chat (menor UID primeiro)
+            const chatId = [currentUser.uid, userId].sort().join('_');
+            
+            // Listener para novas mensagens
+            db.collection('privateMessages')
+                .where('chatId', '==', chatId)
+                .orderBy('timestamp', 'asc')
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const message = change.doc.data();
+                            renderMessage(message, privateChatMessages);
+                        }
+                    });
+                    
+                    // Rolar para o final
+                    privateChatMessages.scrollTop = privateChatMessages.scrollHeight;
+                });
+        }
+        
+        // Carregar mensagens do grupo global
+        function loadGroupMessages() {
+            groupChatMessages.innerHTML = '';
+            
+            // Listener para novas mensagens
+            db.collection('groupMessages')
+                .orderBy('timestamp', 'asc')
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const message = change.doc.data();
+                            renderMessage(message, groupChatMessages);
+                        }
+                    });
+                    
+                    // Rolar para o final
+                    groupChatMessages.scrollTop = groupChatMessages.scrollHeight;
+                });
+        }
+        
+        // Renderizar uma mensagem no chat
+        function renderMessage(message, container) {
+            const isCurrentUser = message.senderId === currentUser.uid;
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isCurrentUser ? 'message-sent' : 'message-received'}`;
+            
+            // Determinar o nome do remetente
+            let senderName = 'Usuário';
+            let isVerified = false;
+            
+            if (isCurrentUser) {
+                senderName = 'Você';
+                // Verificar se o usuário atual é verificado
+                if (verifiedBadge.style.display === 'block') {
+                    isVerified = true;
+                }
+            } else {
+                // Procurar o usuário na lista de usuários
+                const sender = users.find(user => user.id === message.senderId);
+                if (sender) {
+                    senderName = sender.name;
+                    isVerified = sender.verified;
+                }
+            }
+            
+            // Formatação da data/hora
+            const date = message.timestamp ? new Date(message.timestamp.toDate()) : new Date();
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Construir o conteúdo da mensagem
+            let messageContent = '';
+            
+            if (message.content) {
+                // Conteúdo de texto
+                messageContent += `<div class="message-content">${message.content}</div>`;
+            }
+            
+            if (message.mediaUrl) {
+                // Conteúdo de mídia
+                if (message.mediaType && message.mediaType.startsWith('video/')) {
+                    // Vídeo
+                    messageContent += `
+                        <video class="message-media" controls>
+                            <source src="${message.mediaUrl}" type="${message.mediaType}">
+                            Seu navegador não suporta vídeos.
+                        </video>
+                    `;
+                } else {
+                    // Imagem
+                    messageContent += `
+                        <img class="message-media" src="${message.mediaUrl}" alt="Mídia compartilhada" data-url="${message.mediaUrl}">
+                    `;
+                }
+            }
+            
+            // Montar o HTML da mensagem
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    ${senderName}
+                    ${isVerified ? `
+                        <svg class="verified-badge" viewBox="0 0 24 24" style="width: 12px; height: 12px; display: inline-block; margin-left: 4px;">
+                            <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"/>
+                        </svg>
+                    ` : ''}
+                    <span class="message-timestamp">${timeStr}</span>
+                </div>
+                ${messageContent}
+            `;
+            
+            container.appendChild(messageDiv);
+            
+            // Adicionar evento de clique para imagens
+            const mediaElements = messageDiv.querySelectorAll('.message-media');
+            mediaElements.forEach(media => {
+                if (media.tagName === 'IMG') {
+                    media.addEventListener('click', () => {
+                        modalImage.src = media.getAttribute('data-url');
+                        downloadImageBtn.setAttribute('data-url', media.getAttribute('data-url'));
+                        imageModal.style.display = 'flex';
+                    });
+                }
+            });
+        }
+        
+        // Enviar mensagem privada
+        function sendPrivateMessage() {
+            const content = messageInput.value.trim();
+            
+            if (!content && !selectedMediaFile) {
+                return;
+            }
+            
+            if (!currentChat) {
+                showNotification('Selecione um usuário para enviar mensagem.');
+                return;
+            }
+            
+            // Determinar o ID do chat (menor UID primeiro)
+            const chatId = [currentUser.uid, currentChat.id].sort().join('_');
+            
+            // Estrutura base da mensagem
+            const messageData = {
+                senderId: currentUser.uid,
+                receiverId: currentChat.id,
+                chatId: chatId,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            // Adicionar conteúdo de texto, se houver
+            if (content) {
+                messageData.content = content;
+            }
+            
+            // Verificar se há mídia para enviar
+            if (selectedMediaFile) {
+                const fileRef = storage.ref(`messages/${Date.now()}_${selectedMediaFile.name}`);
+                const uploadTask = fileRef.put(selectedMediaFile);
+                
+                uploadTask.on('state_changed', 
+                    // Progresso do upload
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log('Upload progress: ' + progress + '%');
+                    },
+                    // Erro no upload
+                    (error) => {
+                        showNotification('Erro ao enviar mídia: ' + error.message);
+                    },
+                    // Upload concluído
+                    () => {
+                        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                            messageData.mediaUrl = downloadURL;
+                            messageData.mediaType = selectedMediaFile.type;
+                            
+                            // Salvar a mensagem no Firestore
+                            db.collection('privateMessages').add(messageData)
+                                .then(() => {
+                                    // Limpar campos após envio
+                                    messageInput.value = '';
+                                    selectedMediaFile = null;
+                                    
+                                    // Enviar notificação para o destinatário
+                                    sendNotificationToUser(currentChat.id, 'Nova mensagem', 'Você recebeu uma nova mensagem');
+                                })
+                                .catch((error) => {
+                                    showNotification('Erro ao enviar mensagem: ' + error.message);
+                                });
+                        });
+                    }
+                );
+            } else {
+                // Enviar apenas texto
+                db.collection('privateMessages').add(messageData)
+                    .then(() => {
+                        // Limpar campo de mensagem
+                        messageInput.value = '';
+                        
+                        // Enviar notificação para o destinatário
+                        sendNotificationToUser(currentChat.id, 'Nova mensagem', 'Você recebeu uma nova mensagem');
+                    })
+                    .catch((error) => {
+                        showNotification('Erro ao enviar mensagem: ' + error.message);
+                    });
+            }
+        }
+        
+        // Enviar mensagem para o grupo global
+        function sendGroupMessage() {
+            const content = groupMessageInput.value.trim();
+            
+            if (!content && !selectedGroupMediaFile) {
+                return;
+            }
+            
+            // Estrutura base da mensagem
+            const messageData = {
+                senderId: currentUser.uid,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            // Adicionar conteúdo de texto, se houver
+            if (content) {
+                messageData.content = content;
+            }
+            
+            // Verificar se há mídia para enviar
+            if (selectedGroupMediaFile) {
+                const fileRef = storage.ref(`group_messages/${Date.now()}_${selectedGroupMediaFile.name}`);
+                const uploadTask = fileRef.put(selectedGroupMediaFile);
+                
+                uploadTask.on('state_changed', 
+                    // Progresso do upload
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log('Upload progress: ' + progress + '%');
+                    },
+                    // Erro no upload
+                    (error) => {
+                        showNotification('Erro ao enviar mídia: ' + error.message);
+                    },
+                    // Upload concluído
+                    () => {
+                        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                            messageData.mediaUrl = downloadURL;
+                            messageData.mediaType = selectedGroupMediaFile.type;
+                            
+                            // Salvar a mensagem no Firestore
+                            db.collection('groupMessages').add(messageData)
+                                .then(() => {
+                                    // Limpar campos após envio
+                                    groupMessageInput.value = '';
+                                    selectedGroupMediaFile = null;
+                                    
+                                    // Notificar todos os usuários
+                                    notifyGroupMessage(currentUser.uid);
+                                })
+                                .catch((error) => {
+                                    showNotification('Erro ao enviar mensagem: ' + error.message);
+                                });
+                        });
+                    }
+                );
+            } else {
+                // Enviar apenas texto
+                db.collection('groupMessages').add(messageData)
+                    .then(() => {
+                        // Limpar campo de mensagem
+                        groupMessageInput.value = '';
+                        
+                        // Notificar todos os usuários
+                        notifyGroupMessage(currentUser.uid);
+                    })
+                    .catch((error) => {
+                        showNotification('Erro ao enviar mensagem: ' + error.message);
+                    });
+            }
+        }
+        
+        // Notificar a todos do grupo sobre nova mensagem
+        function notifyGroupMessage(senderId) {
+            // Notificar todos os usuários, exceto o remetente
+            users.forEach(user => {
+                if (user.id !== senderId && user.online) {
+                    sendNotificationToUser(user.id, 'Nova mensagem no grupo', 'Nova mensagem no grupo global');
+                }
+            });
+        }
+        
+        // Enviar notificação para um usuário
+        function sendNotificationToUser(userId, title, body) {
+            db.collection('notifications').add({
+                userId: userId,
+                title: title,
+                body: body,
+                read: false,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        // Carregar grupo global
+        function loadGlobalGroup() {
+            // Verificar se o grupo global existe
+            db.collection('groups').where('isGlobal', '==', true).get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        // Criar o grupo global (apenas admin)
+                        if (currentUser.email === ADMIN_EMAIL) {
+                            db.collection('groups').add({
+                                name: 'Grupo Global',
+                                createdBy: currentUser.uid,
+                                isGlobal: true,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                });
+        }
+        
+        // Solicitar verificação
+        function requestVerification() {
+            db.collection('verificationRequests').add({
+                userId: currentUser.uid,
+                status: 'pending',
+                requestDate: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                showNotification('Solicitação enviada com sucesso!');
+                requestVerificationBtn.textContent = 'Solicitação pendente';
+                requestVerificationBtn.disabled = true;
+            })
+            .catch((error) => {
+                showNotification('Erro ao solicitar verificação: ' + error.message);
+            });
+        }
+        
+        // Fazer upload da foto de perfil
+        function uploadProfilePic(file) {
+            if (!file) return;
+            
+            // Referência ao arquivo no Storage
+            const fileRef = storage.ref(`profile_pics/${currentUser.uid}/${Date.now()}_${file.name}`);
+            
+            // Iniciar upload
+            const uploadTask = fileRef.put(file);
+            
+            // Monitorar progresso do upload
+            uploadTask.on('state_changed', 
+                // Progresso
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload progress: ' + progress + '%');
+                },
+                // Erro
+                (error) => {
+                    showNotification('Erro ao fazer upload da imagem: ' + error.message);
+                },
+                // Concluído
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Atualizar URL da imagem no Firestore
+                        db.collection('users').doc(currentUser.uid).update({
+                            profilePic: downloadURL
+                        })
+                        .then(() => {
+                            // Atualizar imagem na tela
+                            profileImage.src = downloadURL;
+                            showNotification('Foto de perfil atualizada com sucesso!');
+                            
+                            // Salvar no localStorage para acesso rápido
+                            localStorage.setItem(`profilePic_${currentUser.uid}`, downloadURL);
+                        })
+                        .catch((error) => {
+                            showNotification('Erro ao atualizar foto de perfil: ' + error.message);
+                        });
+                    });
+                }
+            );
+        }
+        
+        // Função para mostrar notificação
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            // Esconder após 3 segundos
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Funções do painel de admin
+        function createGlobalGroup() {
+            db.collection('groups').where('isGlobal', '==', true).get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        return db.collection('groups').add({
+                            name: 'Grupo Global',
+                            createdBy: currentUser.uid,
+                            isGlobal: true,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    } else {
+                        throw new Error('O grupo global já existe.');
+                    }
+                })
+                .then(() => {
+                    showNotification('Grupo global criado com sucesso!');
+                })
+                .catch((error) => {
+                    showNotification(error.message);
+                });
+        }
+        
+        function manageVerifications() {
+            // Abrir área para gerenciar solicitações de verificação
+            db.collection('verificationRequests')
+                .where('status', '==', 'pending')
+                .get()
+                .then((querySnapshot) => {
+                    let requestsHTML = '';
+                    const requests = [];
+                    
+                    querySnapshot.forEach((doc) => {
+                        const request = doc.data();
+                        request.id = doc.id;
+                        requests.push(request);
+                    });
+                    
+                    if (requests.length === 0) {
+                        showNotification('Não há solicitações pendentes.');
+                        return;
+                    }
+                    
+                    // Para cada solicitação, obter dados do usuário
+                    Promise.all(
+                        requests.map(request => 
+                            db.collection('users').doc(request.userId).get()
+                                .then(userDoc => {
+                                    if (userDoc.exists) {
+                                        const userData = userDoc.data();
+                                        return {
+                                            requestId: request.id,
+                                            userId: request.userId,
+                                            userName: userData.name,
+                                            userEmail: userData.email,
+                                            requestDate: request.requestDate ? new Date(request.requestDate.toDate()).toLocaleDateString() : 'Data desconhecida'
+                                        };
+                                    }
+                                    return null;
+                                })
+                        )
+                    ).then(userRequests => {
+                        // Filtrar solicitações nulas (caso algum usuário não exista mais)
+                        const validRequests = userRequests.filter(req => req !== null);
+                        
+                        if (validRequests.length === 0) {
+                            showNotification('Não há solicitações válidas pendentes.');
+                            return;
+                        }
+                        
+                        // Criar HTML para cada solicitação
+                        validRequests.forEach(req => {
+                            requestsHTML += `
+                                <div style="margin-bottom: 15px; padding: 10px; background-color: rgba(255,255,255,0.1); border-radius: 5px;">
+                                    <p><strong>Nome:</strong> ${req.userName}</p>
+                                    <p><strong>Email:</strong> ${req.userEmail}</p>
+                                    <p><strong>Data da solicitação:</strong> ${req.requestDate}</p>
+                                    <div style="display: flex; margin-top: 10px;">
+                                        <button onclick="approveVerification('${req.requestId}', '${req.userId}')" style="flex: 1; margin-right: 5px; background-color: #4caf50; color: white; border: none; padding: 5px; border-radius: 3px; cursor: pointer;">Aprovar</button>
+                                        <button onclick="rejectVerification('${req.requestId}')" style="flex: 1; margin-left: 5px; background-color: #f44336; color: white; border: none; padding: 5px; border-radius: 3px; cursor: pointer;">Rejeitar</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        // Criar e mostrar modal
+                        const modalDiv = document.createElement('div');
+                        modalDiv.style.position = 'fixed';
+                        modalDiv.style.top = '0';
+                        modalDiv.style.left = '0';
+                        modalDiv.style.width = '100%';
+                        modalDiv.style.height = '100%';
+                        modalDiv.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                        modalDiv.style.zIndex = '2000';
+                        modalDiv.style.padding = '20px';
+                        modalDiv.style.display = 'flex';
+                        modalDiv.style.justifyContent = 'center';
+                        modalDiv.style.alignItems = 'center';
+                        modalDiv.id = 'verificationModal';
+                        
+                        const modalContent = document.createElement('div');
+                        modalContent.style.backgroundColor = '#1a1a2e';
+                        modalContent.style.borderRadius = '10px';
+                        modalContent.style.padding = '20px';
+                        modalContent.style.maxWidth = '500px';
+                        modalContent.style.width = '100%';
+                        modalContent.style.maxHeight = '90vh';
+                        modalContent.style.overflowY = 'auto';
+                        
+                        modalContent.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="margin: 0;">Solicitações de Verificação</h2>
+                                <span onclick="document.getElementById('verificationModal').remove()" style="cursor: pointer; font-size: 24px;">&times;</span>
+                            </div>
+                            ${requestsHTML}
+                        `;
+                        
+                        modalDiv.appendChild(modalContent);
+                        document.body.appendChild(modalDiv);
+                        
+                        // Adicionar funções globais para os botões do modal
+                        window.approveVerification = function(requestId, userId) {
+                            // Aprovar verificação
+                            db.collection('verificationRequests').doc(requestId).update({
+                                status: 'approved',
+                                approvedBy: currentUser.uid,
+                                approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            })
+                            .then(() => {
+                                // Atualizar o status de verificação do usuário
+                                return db.collection('users').doc(userId).update({
+                                    verified: true,
+                                    verifiedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            })
+                            .then(() => {
+                                showNotification('Verificação aprovada com sucesso!');
+                                document.getElementById('verificationModal').remove();
+                                // Recarregar a lista de usuários
+                                loadUsers();
+                            })
+                            .catch((error) => {
+                                showNotification('Erro ao aprovar verificação: ' + error.message);
+                            });
+                        };
+                        
+                        window.rejectVerification = function(requestId) {
+                            // Rejeitar verificação
+                            db.collection('verificationRequests').doc(requestId).update({
+                                status: 'rejected',
+                                rejectedBy: currentUser.uid,
+                                rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            })
+                            .then(() => {
+                                showNotification('Verificação rejeitada com sucesso!');
+                                document.getElementById('verificationModal').remove();
+                            })
+                            .catch((error) => {
+                                showNotification('Erro ao rejeitar verificação: ' + error.message);
+                            });
+                        };
+                    });
+                })
+                .catch((error) => {
+                    showNotification('Erro ao carregar solicitações: ' + error.message);
+                });
+        }
+        
+        function manageBans() {
+            // Abrir área para gerenciar banimentos
+            db.collection('users').get()
+                .then((querySnapshot) => {
+                    let usersHTML = '';
+                    
+                    querySnapshot.forEach((doc) => {
+                        const userData = doc.data();
+                        
+                        // Não mostrar o próprio admin na lista
+                        if (doc.id !== currentUser.uid) {
+                            usersHTML += `
+                                <div style="margin-bottom: 15px; padding: 10px; background-color: rgba(255,255,255,0.1); border-radius: 5px;">
+                                    <div style="display: flex; align-items: center;">
+                                        <img src="${userData.profilePic || 'https://via.placeholder.com/150'}" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                                        <div>
+                                            <p style="margin: 0;"><strong>${userData.name}</strong> ${userData.verified ? '✓' : ''}</p>
+                                            <p style="margin: 0; font-size: 12px; opacity: 0.7;">${userData.email}</p>
+                                        </div>
+                                        <div style="margin-left: auto; display: flex;">
+                                            ${userData.banned ? 
+                                                `<button onclick="unbanUser('${doc.id}')" style="background-color: #4caf50; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer;">Desbanir</button>` :
+                                                `<button onclick="banUser('${doc.id}')" style="background-color: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer;">Banir</button>`
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    // Criar e mostrar modal
+                    const modalDiv = document.createElement('div');
+                    modalDiv.style.position = 'fixed';
+                    modalDiv.style.top = '0';
+                    modalDiv.style.left = '0';
+                    modalDiv.style.width = '100%';
+                    modalDiv.style.height = '100%';
+                    modalDiv.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                    modalDiv.style.zIndex = '2000';
+                    modalDiv.style.padding = '20px';
+                    modalDiv.style.display = 'flex';
+                    modalDiv.style.justifyContent = 'center';
+                    modalDiv.style.alignItems = 'center';
+                    modalDiv.id = 'banModal';
+                    
+                    const modalContent = document.createElement('div');
+                    modalContent.style.backgroundColor = '#1a1a2e';
+                    modalContent.style.borderRadius = '10px';
+                    modalContent.style.padding = '20px';
+                    modalContent.style.maxWidth = '600px';
+                    modalContent.style.width = '100%';
+                    modalContent.style.maxHeight = '90vh';
+                    modalContent.style.overflowY = 'auto';
+                    
+                    modalContent.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">Gerenciar Usuários</h2>
+                            <span onclick="document.getElementById('banModal').remove()" style="cursor: pointer; font-size: 24px;">&times;</span>
+                        </div>
+                        ${usersHTML}
+                    `;
+                    
+                    modalDiv.appendChild(modalContent);
+                    document.body.appendChild(modalDiv);
+                    
+                    // Adicionar funções globais para os botões do modal
+                    window.banUser = function(userId) {
+                        db.collection('users').doc(userId).update({
+                            banned: true,
+                            bannedBy: currentUser.uid,
+                            bannedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        })
+                        .then(() => {
+                            showNotification('Usuário banido com sucesso!');
+                            document.getElementById('banModal').remove();
+                            // Recarregar a lista de usuários
+                            loadUsers();
+                        })
+                        .catch((error) => {
+                            showNotification('Erro ao banir usuário: ' + error.message);
+                        });
+                    };
+                    
+                    window.unbanUser = function(userId) {
+                        db.collection('users').doc(userId).update({
+                            banned: false,
+                            unbannedBy: currentUser.uid,
+                            unbannedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        })
+                        .then(() => {
+                            showNotification('Usuário desbanido com sucesso!');
+                            document.getElementById('banModal').remove();
+                            // Recarregar a lista de usuários
+                            loadUsers();
+                        })
+                        .catch((error) => {
+                            showNotification('Erro ao desbanir usuário: ' + error.message);
+                        });
+                    };
+                })
+                .catch((error) => {
+                    showNotification('Erro ao carregar usuários: ' + error.message);
+                });
+        }
+        
+        // Inicialização e Event Listeners
+        let selectedMediaFile = null;
+        let selectedGroupMediaFile = null;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Login/Registro
+            loginTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    loginTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    if (tab.dataset.tab === 'login') {
+                        loginForm.style.display = 'block';
+                        registerForm.style.display = 'none';
+                    } else {
+                        loginForm.style.display = 'none';
+                        registerForm.style.display = 'block';
+                    }
+                });
+            });
+            
+            showRegisterLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showRegisterForm();
+            });
+            
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showLoginForm();
+            });
+            
+            loginButton.addEventListener('click', loginUser);
+            registerButton.addEventListener('click', registerUser);
+            
+            // Tabs de status
+            statusTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    statusTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    loadUsers(tab.dataset.status);
+                });
+            });
+            
+            // Upload de foto de perfil
+            profilePicInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    uploadProfilePic(file);
+                }
+            });
+            
+            // Envio de mensagens
+            sendMessageBtn.addEventListener('click', sendPrivateMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendPrivateMessage();
+                }
+            });
+            
+            // Envio de mensagens no grupo
+            sendGroupMessageBtn.addEventListener('click', sendGroupMessage);
+            groupMessageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendGroupMessage();
+                }
+            });
+            
+            // Upload de mídia
+            attachMediaBtn.addEventListener('click', () => {
+                mediaInput.click();
+            });
+            
+            mediaInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    selectedMediaFile = e.target.files[0];
+                    showNotification('Mídia selecionada: ' + selectedMediaFile.name);
+                }
+            });
+            
+            groupAttachMediaBtn.addEventListener('click', () => {
+                groupMediaInput.click();
+            });
+            
+            groupMediaInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    selectedGroupMediaFile = e.target.files[0];
+                    showNotification('Mídia selecionada: ' + selectedGroupMediaFile.name);
+                }
+            });
+            
+            // Verificação
+            requestVerificationBtn.addEventListener('click', requestVerification);
+            
+            // Funções de admin
+            if (createGroupBtn) {
+                createGroupBtn.addEventListener('click', createGlobalGroup);
+            }
+            
+            if (manageVerificationsBtn) {
+                manageVerificationsBtn.addEventListener('click', manageVerifications);
+            }
+            
+            if (manageBansBtn) {
+                manageBansBtn.addEventListener('click', manageBans);
+            }
+            
+            // Modal de imagem
+            closeImageModal.addEventListener('click', () => {
+                imageModal.style.display = 'none';
+            });
+            
+            downloadImageBtn.addEventListener('click', () => {
+                const imageUrl = downloadImageBtn.getAttribute('data-url');
+                if (imageUrl) {
+                    const a = document.createElement('a');
+                    a.href = imageUrl;
+                    a.download = 'download_' + Date.now() + '.jpg';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            });
+            
+            // Fechar modal ao clicar fora
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    imageModal.style.display = 'none';
+                }
+            });
+            
+            // Carregar foto de perfil do localStorage se disponível
+            window.addEventListener('load', () => {
+                if (currentUser) {
+                    const cachedProfilePic = localStorage.getItem(`profilePic_${currentUser.uid}`);
+                    if (cachedProfilePic) {
+                        profileImage.src = cachedProfilePic;
+                    }
+                }
+            });
+        });
+        
+        // Funções auxiliares
+        function showLoginForm() {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            loginTabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === 'login') {
+                    tab.classList.add('active');
+                }
+            });
+        }
+        
+        function showRegisterForm() {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            loginTabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === 'register') {
+                    tab.classList.add('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
